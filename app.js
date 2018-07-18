@@ -1,13 +1,7 @@
 #!/usr/bin/env node
 const program = require('commander');
 const path = require('path');
-const gfs = require("mkfs");
-const { getFileList, getSheetData } = require("./lib");
-
-let auth = '';
-let rootFolderId = '';
-let outputPath = 'output';
-
+const { getFileList, getSheetData, writeFile, getAuth } = require("./lib");
 
 const assocPath = (paths, val, obj) => {
   let pointer = null;
@@ -19,24 +13,17 @@ const assocPath = (paths, val, obj) => {
   });
 };
 
-const outputFiles = data => {
-  const keys = Object.keys(data);
-  keys.forEach(key => {
-    gfs.writeFiles(
-      `${outputPath}/${key}.json`,
-      JSON.stringify(data[key]),
-      "utf8",
-      (err, data) => {
-        if (err) console.log(err);
-      }
-    );
-  });
+const outputFiles = async (outputPath, data) => {
+  for(const key of Object.keys(data)){
+    await writeFile(`${outputPath}/${key}.json`, JSON.stringify(data[key]));
+  }
 };
 
-const scanFolder = async (path = [], folderId = rootFolderId, data) => {
-  const fileList = await getFileList(auth, folderId);
+const scanFolder = async (auth, folderId, path = [], data) => {
   let result = data ? data : {};
 
+  const fileList = await getFileList(auth, folderId);
+  
   const folderList = fileList.filter(
     d =>
       d.mimeType === "application/vnd.google-apps.folder" &&
@@ -44,7 +31,7 @@ const scanFolder = async (path = [], folderId = rootFolderId, data) => {
   );
 
   for (const folder of folderList) {
-    result = await scanFolder([...path, folder.name], folder.id, data)
+    result = await scanFolder(auth, folder.id, [...path, folder.name], data)
   }
 
   const sheetList = fileList.filter(
@@ -70,9 +57,10 @@ const scanFolder = async (path = [], folderId = rootFolderId, data) => {
   return result;
 };
 
-const main = async () => {
-  const result = await scanFolder();
-  outputFiles(result);
+const main = async (authPath, outputPath, rootFolderId) => {
+  const auth = await getAuth(authPath)
+  const result = await scanFolder(auth, rootFolderId);
+  await outputFiles(outputPath, result);
 };
 
 
@@ -80,19 +68,21 @@ program
   .version('0.0.1')
   .usage('[options]')
   .option('-f, --folder <folderId>', 'google drive folderId.')
-  .option('-k, --key <apiKey>', 'google api key.')
+  .option('-k, --key <keyFilePath>', 'google service account json file path. Default is "./service_account.json"')
   .option('-o, --out <outputPath>', 'output path.')
   .parse(process.argv);
 
-if(program.folder && program.key){
-  if(program.out) outputPath = program.out;
-  const startTime = new Date();
-  auth = program.key;
+if(program.folder){
   rootFolderId = program.folder;
-  main().then(()=>{
+  const startTime = new Date();
+  main(
+    program.key || './service_account.json',
+    program.out || 'output',
+    program.folder
+  ).then(() => {
     console.log('Build Succeeded');
     console.log(`Time: ${(new Date() - startTime) / 1000 }s`)
-    console.log(`Path: ${path.resolve(outputPath)}`);
+    console.log(`Path: ${path.resolve(program.out || 'output')}`);
     process.exit();
   });
 }else{

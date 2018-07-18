@@ -1,4 +1,5 @@
 const { google } = require("googleapis");
+const gfs = require("mkfs");
 
 module.exports = {
   getFileList: (auth, folderId) =>
@@ -34,5 +35,29 @@ module.exports = {
           resolve(rows);
         }
       );
+    }),
+  writeFile: (path, data) =>
+    new Promise((resolve, reject) => {
+      gfs.writeFiles(
+        path, data, "utf8",
+        (err, data) => {
+          if (err) return reject(err);
+          resolve(data);
+        }
+      );
+    }),
+  getAuth: (path) => 
+    new Promise((resolve, reject) => {
+      const privatekey = require(`${path}`);
+      const jwtClient = new google.auth.JWT(
+        privatekey.client_email,
+        null,
+        privatekey.private_key,
+        ['https://www.googleapis.com/auth/spreadsheets',
+          'https://www.googleapis.com/auth/drive']);
+      jwtClient.authorize((err, tokens) => {
+        if (err) { return reject(err); }
+        resolve(jwtClient);
+      });
     })
 };
