@@ -38,25 +38,27 @@ module.exports = {
     }),
   writeFile: (path, data) =>
     new Promise((resolve, reject) => {
-      gfs.writeFiles(
-        path, data, "utf8",
-        (err, data) => {
-          if (err) return reject(err);
-          resolve(data);
-        }
-      );
+      gfs.writeFiles(path, data, "utf8", (err, data) => {
+        if (err) return reject(err);
+        resolve(data);
+      });
     }),
-  getAuth: (path) => 
+  getAuth: path =>
     new Promise((resolve, reject) => {
       const privatekey = require(`${path}`);
       const jwtClient = new google.auth.JWT(
         privatekey.client_email,
         null,
         privatekey.private_key,
-        ['https://www.googleapis.com/auth/spreadsheets',
-          'https://www.googleapis.com/auth/drive']);
+        [
+          "https://www.googleapis.com/auth/spreadsheets",
+          "https://www.googleapis.com/auth/drive"
+        ]
+      );
       jwtClient.authorize((err, tokens) => {
-        if (err) { return reject(err); }
+        if (err) {
+          return reject(err);
+        }
         resolve(jwtClient);
       });
     })
