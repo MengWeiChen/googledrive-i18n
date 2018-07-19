@@ -1,5 +1,6 @@
 const { google } = require("googleapis");
 const gfs = require("mkfs");
+const path = require("path");
 
 module.exports = {
   getFileList: (auth, folderId) =>
@@ -43,9 +44,9 @@ module.exports = {
         resolve(data);
       });
     }),
-  getAuth: path =>
+  getAuth: filePath =>
     new Promise((resolve, reject) => {
-      const privatekey = require(`${path}`);
+      const privatekey = require(`${path.resolve(process.cwd(), filePath)}`);
       const jwtClient = new google.auth.JWT(
         privatekey.client_email,
         null,
