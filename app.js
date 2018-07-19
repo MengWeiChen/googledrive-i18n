@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 const program = require("commander");
 const path = require("path");
+const stringify = require("json-stable-stringify");
+
 const { getFileList, getSheetData, writeFile, getAuth } = require("./lib");
 let keyMap = require("./defaultKeyMap.json");
 
@@ -18,7 +20,10 @@ const assocPath = (paths, val, obj) => {
 
 const outputFiles = async (outputPath, data) => {
   for (const key of Object.keys(data)) {
-    await writeFile(`${outputPath}/${key}.json`, JSON.stringify(data[key]));
+    await writeFile(
+      `${outputPath}/${key}.json`,
+      stringify(data[key], { space: "\t" })
+    );
   }
 };
 
