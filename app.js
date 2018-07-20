@@ -76,6 +76,7 @@ const scanFolder = async (auth, folderId, path = [], data) => {
       const [key, ...contents] = row;
       contents.forEach((string, index) => {
         const lang = getKey(languages[index + 1]);
+        if (lang.indexOf("_") == 0) return;
         assocPath([lang, ...path, sheetName, key], string, result);
       });
     });
