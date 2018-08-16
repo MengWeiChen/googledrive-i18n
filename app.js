@@ -26,6 +26,7 @@ const assocPath = (paths, val, obj) => {
 
 const outputFiles = async (outputPath, data) => {
   for (const key of Object.keys(data)) {
+    if (Object.keys(data[key]).length == 0) break
     await writeFile(
       `${outputPath}/${key}.json`,
       stringify(data[key], { space: '\t' })
@@ -35,7 +36,6 @@ const outputFiles = async (outputPath, data) => {
 const scanSheet = async (auth, sheetId) => {
   let result = {}
   const sheets = await getSheets(auth, sheetId)
-  console.log(sheets)
   const gridNameList = sheets.map(s => s.properties.title)
   const keymapName = '_keymap'
   if (gridNameList.some(name => name == keymapName)) {
@@ -47,9 +47,7 @@ const scanSheet = async (auth, sheetId) => {
 
   for (const gridName of targetGridName) {
     const res = await getSheetData(auth, sheetId, gridName)
-    console.log(res);
     const [languages, ...strings] = res
-    
 
     strings.forEach(row => {
       const [key, ...contents] = row
