@@ -55,6 +55,7 @@ const scanSheet = async (auth, sheetId) => {
         const lang = getKey(languages[index + 1])
         if (lang.indexOf('_') == 0) return
         if (key == '') return
+        if (string == '') return
         assocPath([lang, gridName, key], string, result)
       })
     })
