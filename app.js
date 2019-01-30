@@ -53,6 +53,7 @@ const scanSheet = async (auth, sheetId) => {
       const [key, ...contents] = row
       contents.forEach((string, index) => {
         const lang = getKey(languages[index + 1])
+        if (!lang) return
         if (lang.indexOf('_') == 0) return
         if (key == '') return
         if (string == '') return
