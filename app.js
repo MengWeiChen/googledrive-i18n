@@ -33,7 +33,7 @@ const outputFiles = async (outputPath, data) => {
     );
   }
 };
-const scanSheet = async (auth, sheetId, tagId) => {
+const scanSheet = async (auth, sheetId, tagId, slice) => {
   let result = {};
   const sheets = await getSheets(auth, sheetId);
   const gridNameList = sheets.map((s) => s.properties.title);
@@ -49,7 +49,7 @@ const scanSheet = async (auth, sheetId, tagId) => {
 
   for (const gridName of targetGridName) {
     const res = await getSheetData(auth, sheetId, gridName);
-    const [languages, ...strings] = res;
+    const [languages, ...strings] = res.slice(slice ? parseInt(slice, 10) : 0);
 
     strings.forEach((row) => {
       const [key, ...contents] = row;
@@ -59,9 +59,9 @@ const scanSheet = async (auth, sheetId, tagId) => {
         if (lang.indexOf("_") == 0) return;
         if (key == "") return;
         if (string == "") return;
-        if(tagId){
+        if (tagId) {
           assocPath([lang, key], string, result);
-        }else{
+        } else {
           assocPath([lang, gridName, key], string, result);
         }
       });
@@ -130,13 +130,20 @@ const scanFolder = async (auth, folderId, path = [], data) => {
   return result;
 };
 
-const main = async (authPath, outputPath, rootFolderId, sheetId, tagId) => {
+const main = async (
+  authPath,
+  outputPath,
+  rootFolderId,
+  sheetId,
+  tagId,
+  slice
+) => {
   const auth = await getAuth(authPath);
   let result;
   if (!sheetId) {
     result = await scanFolder(auth, rootFolderId);
   } else {
-    result = await scanSheet(auth, sheetId, tagId);
+    result = await scanSheet(auth, sheetId, tagId, slice);
   }
   await outputFiles(outputPath, result);
 };
@@ -152,6 +159,7 @@ program
   .option("-o, --out <outputPath>", "output path.")
   .option("-s, --sheetId <sheetId>", "sheets mode with sheetId.")
   .option("-t, --tagId <tagId>", "tagId (sheets mode only).")
+  .option("-slice, --silce <slice>", "slice from (sheets mode only).")
   .parse(process.argv);
 
 if (program.folder || program.sheetId) {
@@ -162,7 +170,8 @@ if (program.folder || program.sheetId) {
     program.out || "output",
     program.folder,
     program.sheetId,
-    program.tagId
+    program.tagId,
+    program.slice
   ).then(() => {
     console.log("Build Succeeded");
     console.log(`Time: ${(new Date() - startTime) / 1000}s`);
