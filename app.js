@@ -49,10 +49,12 @@ const scanSheet = async (auth, sheetId, tagId, slice) => {
 
   for (const gridName of targetGridName) {
     const res = await getSheetData(auth, sheetId, gridName);
-    const [languages, ...strings] = res.slice(slice ? parseInt(slice, 10) : 0);
+
+    const [languagesRow, ...strings] = res;
+    const languages = languagesRow.slice(slice ? parseInt(slice, 10) : 0);
 
     strings.forEach((row) => {
-      const [key, ...contents] = row;
+      const [key, ...contents] = row.slice(slice ? parseInt(slice, 10) : 0);
       contents.forEach((string, index) => {
         const lang = getKey(languages[index + 1]);
         if (!lang) return;
