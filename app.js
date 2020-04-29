@@ -159,7 +159,7 @@ program
   .option("-o, --out <outputPath>", "output path.")
   .option("-s, --sheetId <sheetId>", "sheets mode with sheetId.")
   .option("-t, --tagId <tagId>", "tagId (sheets mode only).")
-  .option("-slice, --silce <slice>", "slice from (sheets mode only).")
+  .option("-l, --silce <slice>", "slice from (sheets mode only).")
   .parse(process.argv);
 
 if (program.folder || program.sheetId) {
