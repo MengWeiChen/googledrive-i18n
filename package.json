@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "commander": "^2.16.0",
-    "googleapis": "^27.0.0",
+    "googleapis": "^39.1.0",
     "json-stable-stringify": "^1.0.1",
     "mkfs": "^1.0.4"
   },
